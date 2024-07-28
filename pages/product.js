@@ -9,6 +9,14 @@ import {
   getDoc,
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
+import {
+    getStorage,
+    ref,
+    uploadBytesResumable,
+    getDownloadURL,
+  } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js";
+  
+
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyClHcLsmsf7vy_kmXZdWHoZhgCk3GyFRPE",
@@ -25,13 +33,13 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 // const auth = getAuth();
 const db = getFirestore(app);
+const storage = getStorage();
 
-
-let productName = document.getElementById("productName");
-let description = document.getElementById("description");
-let price = document.getElementById("price");
-let image = document.getElementById("image");
-let category = document.getElementById("category");
+// let productName = document.getElementById("productName");
+// let description = document.getElementById("description");
+// let price = document.getElementById("price");
+// let image = document.getElementById("image");
+// let category = document.getElementById("category");
 
 
 

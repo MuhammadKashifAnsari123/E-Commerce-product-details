@@ -1,8 +1,9 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-analytics.js";
-import { getAuth, signOut, } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 import { collection, getFirestore, getDocs } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+import { getStorage, getDownloadURL, ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -19,28 +20,33 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth();
-
 const db = getFirestore(app);
-
-
-let products = []
+const storage = getStorage();
+let products = [];
 
 let loginLink = document.getElementById("loginLink");
 let uploadLink = document.getElementById("uploadLink");
 let signupLink = document.getElementById("signupLink");
 let logoutBtn = document.getElementById("logoutBtn");
 let productParent = document.getElementById("productParent");
+let image = document.getElementById("image");
 
 function init() {
   let userObj = localStorage.getItem("user");
   userObj = JSON.parse(userObj);
-  if(userObj){
+  if (userObj) {
     loginLink.style.display = "none";
-     signupLink.style.display = "none";
-     if(userObj.userType === "user"){
-      uploadLink.style.display = "none";
-     }
-     logoutBtn.className = "text-white mx-4 inline-block bg-blue-500 p-2 rounded"
+    signupLink.style.display = "none";
+    if (userObj.userType === "admin") {
+      uploadLink.style.display = "inline-block";
+    } else {
+      uploadLink.style.display = "none"; // Hide upload link for non-admin users
+    }
+    logoutBtn.className = "text-white mx-4 inline-block bg-blue-500 p-2 rounded";
+  } else {
+    // If no user is logged in, make sure uploadLink is hidden
+    uploadLink.style.display = "none";
+    logoutBtn.className = "hidden"; // Hide logout button if no user is logged in
   }
 }
 init();
@@ -53,9 +59,9 @@ window.logout = () => {
   }) 
   .catch((err) => {
     alert(err.message);
-  })
-}
-
+  });
+  window.location.assign("./index.html")
+};
 
 let renderProducts = () => {
   productParent.innerHTML = "";
@@ -72,9 +78,8 @@ let renderProducts = () => {
         </div>
       </div>
     `;
-  })
-}
-
+  });
+};
 
 let getProducts = async () => {
   const reference = collection(db, "products");
@@ -89,3 +94,4 @@ let getProducts = async () => {
   renderProducts();
 };
 getProducts();
+
