@@ -31,72 +31,104 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-// const auth = getAuth();
 const db = getFirestore(app);
 const storage = getStorage();
 
-// let productName = document.getElementById("productName");
-// let description = document.getElementById("description");
-// let price = document.getElementById("price");
-// let image = document.getElementById("image");
-// let category = document.getElementById("category");
+let productName = document.getElementById("productName");
+let description = document.getElementById("description");
+let price = document.getElementById("price");
+let image = document.getElementById("image");
+let category = document.getElementById("category");
 
 
+let upload = () => {
+  return new Promise((resolve, reject) => {
+    let files = image.files[0];
+    console.log(files);
+    const randomNum = Math.random().toString().slice(2);
+    const storageRef = ref(storage, `images/${randomNum}`);
+    const uploadTask = uploadBytesResumable(storageRef, files);
 
-window.UploadProduct = async () => {
-  // Assuming these are your input elements
-  let productName = document.getElementById('productName');
-  let description = document.getElementById('description');
-  let price = document.getElementById('price');
-  let image = document.getElementById('image');
-  let category = document.getElementById('category');
+    uploadTask.on('state_changed',
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+        switch (snapshot.state) {
+          case 'paused':
+            console.log('Upload is paused');
+            break;
+          case 'running':
+            console.log('Upload is running');
+            break;
+        }
+      },
+      (error) => {
+        console.log(error.message);
+        reject(error.message);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          console.log('File available at', downloadURL);
+          resolve(downloadURL);
+        });
+      }
+    );
+  });
+}
 
-  // Simple validation
-  if (!productName.value.trim() || !description.value.trim() || !price.value.trim() || !image.value.trim() || !category.value.trim()) {
-      Swal.fire({
-          icon: 'error',
-          title: 'All fields are required!',
-          text: 'Please fill in all fields before submitting.',
-      });
-      return;
+window.UploadProduct = () => {
+  let productNameValue = productName.value.trim();
+  let descriptionValue = description.value.trim();
+  let priceValue = price.value.trim();
+  let categoryValue = category.value.trim();
+
+  if (!productNameValue || !descriptionValue || !priceValue || !categoryValue) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Missing Information',
+      text: 'Please fill in all required fields.',
+    });
+    return;
   }
 
   let obj = {
-      productName: productName.value,
-      description: description.value,
-      price: price.value,
-      image: image.value,
-      category: category.value,
+    productName: productNameValue,
+    description: descriptionValue,
+    price: priceValue,
+    image: '',
+    category: categoryValue
   };
 
-  productName.value = ''
-  description.value = ''
-  price.value = ''
-  image.value = ''
-  category.value = ''
+  upload()
+    .then(async (res) => {
+      obj.image = res;
+      productName.value = '';
+      description.value = '';
+      price.value = '';
+      category.value = '';
+      image.value = '';
 
-  try {
-      let reference = collection(db, "products");
-      let res = await addDoc(reference, obj);
-      Swal.fire({
+      try {
+        let reference = collection(db, "products");
+        let result = await addDoc(reference, obj);
+        Swal.fire({
           icon: 'success',
           title: 'Product Uploaded',
           text: 'Your product has been successfully uploaded.',
-      });
-  } catch (error) {
-      Swal.fire({
+        });
+      } catch (error) {
+        Swal.fire({
           icon: 'error',
           title: 'Upload Failed',
           text: `Error: ${error.message}`,
-      });
-  }
-};
-
-
-
-
-
-
+        });
+      }
+      window.location.assign("../index.html");
+    })
+    .catch(err => {
+      console.log(err);
+    });
+}
 
 
 
