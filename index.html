@@ -81,12 +81,10 @@
     <script>
         document.getElementById('menu-toggle').addEventListener('click', function() {
             var mobileMenu = document.getElementById('mobile-menu');
-            if (mobileMenu.classList.contains('hidden')) {
-                mobileMenu.classList.remove('hidden');
-            } else {
-                mobileMenu.classList.add('hidden');
-            }
+            mobileMenu.classList.toggle('hidden');
         });
-    </script>
+
+  </script>
+
 </body>
 </html>
